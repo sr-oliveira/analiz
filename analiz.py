@@ -1,3 +1,4 @@
+import subprocess
 import tkinter as tk
 from tkinter import ttk, scrolledtext, filedialog, messagebox
 from fpdf import FPDF
@@ -272,9 +273,24 @@ class WebAnalyzerApp:
             self.exibir_resultado(f"Erro na avaliação de criptografia: {e}")
 
     def capturar_logs(self):
-        # Simulação: aqui você integraria a captura real de logs do sistema
-        logs = ["Log de acesso bem-sucedido", "Tentativa de acesso não autorizado", "Outro evento de log", "..."]
-        return logs
+        try:
+            # Modifique isso de acordo com o seu ambiente e método real para obter logs
+            # Aqui, estamos usando o comando "journalctl" no Linux como exemplo
+            resultado = subprocess.run(["journalctl", "--no-pager"], capture_output=True, text=True)
+
+            # Verifique se o comando foi executado com sucesso
+            if resultado.returncode == 0:
+                # Divida as linhas do resultado em uma lista de logs
+                logs = resultado.stdout.splitlines()
+                return logs
+            else:
+                # Em caso de erro na execução do comando, exiba uma mensagem
+                self.exibir_resultado(f"Erro ao obter logs: {resultado.stderr}")
+                return []
+        except Exception as e:
+            # Lidar com exceções, se houver, durante a execução do método
+            self.exibir_resultado(f"Erro ao capturar logs: {e}")
+            return []
 
     def is_admin(self):
         # Verificar se o script está sendo executado como administrador no Windows
