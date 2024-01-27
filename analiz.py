@@ -9,6 +9,7 @@ import re
 import os
 import sys
 import ctypes
+import hashlib
 
 class WebAnalyzerApp:
     def __init__(self, root):
@@ -34,9 +35,13 @@ class WebAnalyzerApp:
         self.btn_descompilar_js = ttk.Button(self.root, text="Descompilar JS", command=self.descompilar_js)
         self.btn_descompilar_js.grid(column=3, row=0, padx=10, pady=5)
 
+        # Botão para verificar segurança
+        self.btn_verificar_seguranca = ttk.Button(self.root, text="Verificar Segurança", command=self.verificar_seguranca)
+        self.btn_verificar_seguranca.grid(column=6, row=0, padx=10, pady=5)
+
         # Área de exibição de resultados
         self.results_text = scrolledtext.ScrolledText(self.root, wrap=tk.WORD, width=80, height=20)
-        self.results_text.grid(column=0, row=1, columnspan=4, padx=10, pady=5)
+        self.results_text.grid(column=0, row=1, columnspan=7, padx=10, pady=5)
 
         # Botão para exportar resultados como CSV
         self.btn_exportar_csv = ttk.Button(self.root, text="Exportar CSV", command=self.exportar_csv)
@@ -218,6 +223,57 @@ class WebAnalyzerApp:
         pdf.output(file_path)
 
         messagebox.showinfo("Exportação Concluída", "Os resultados foram exportados para um arquivo PDF.")
+
+    def verificar_seguranca(self):
+        # Limpar a área de exibição de resultados
+        self.results_text.delete(1.0, tk.END)
+
+        # Obter o URL do Entry
+        url_alvo = self.entry_url.get()
+
+        # Obtém o código-fonte da página
+        codigo_fonte = self.obter_codigo_fonte(url_alvo)
+        if codigo_fonte:
+            # Realiza a análise de segurança
+            self.realizar_analise_seguranca(codigo_fonte)
+
+    def realizar_analise_seguranca(self, codigo_fonte):
+        # Avaliação de Criptografia
+        self.avaliacao_criptografia(codigo_fonte)
+
+        # Monitoramento de Atividade Suspeita
+        logs = self.capturar_logs()
+        self.monitoramento_atividade_suspeita(logs)
+
+    def avaliacao_criptografia(self, texto):
+        try:
+            # Hash SHA-256
+            hash_sha256 = hashlib.sha256(texto.encode()).hexdigest()
+            self.exibir_resultado(f"Hash SHA-256 do código: {hash_sha256}")
+        except Exception as e:
+            self.exibir_resultado(f"Erro na avaliação de criptografia: {e}")
+
+    def capturar_logs(self):
+        # Simulação: aqui você integraria a captura real de logs do sistema
+        logs = ["Log de acesso bem-sucedido", "Tentativa de acesso não autorizado", "Outro evento de log", "..."]
+        return logs
+
+    def monitoramento_atividade_suspeita(self, logs):
+        try:
+            # Análise de padrões incomuns nos logs
+            padroes_incomuns = ['SQL.*error', 'acesso\s+não\s+autorizado', 'padrão\s+incomum', ...]
+            for log in logs:
+                for padrao in padroes_incomuns:
+                    if re.search(padrao, log, re.IGNORECASE):
+                        self.exibir_resultado(f"Atividade suspeita detectada nos logs: {log}")
+
+            # Análise de tentativas de exploração
+            tentativas_exploracao = ['DROP\s+TABLE', 'UNION\s+SELECT', 'tentativa\s+de\s+exploração', ...]
+            for tentativa in tentativas_exploracao:
+                if re.search(tentativa, str(logs), re.IGNORECASE):
+                    self.exibir_resultado(f"Tentativa de exploração detectada nos logs: {tentativa}")
+        except Exception as e:
+            self.exibir_resultado(f"Erro no monitoramento de atividade suspeita: {e}")
 
 def is_admin():
     # Verificar se o script está sendo executado como administrador no Windows
