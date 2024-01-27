@@ -15,7 +15,8 @@ class WebAnalyzerApp:
     def __init__(self, root):
         self.root = root
         root.title("Analiz Web")
-
+        self.padroes_incomuns = ['SQL.*error', 'acesso\s+não\s+autorizado', 'padrão\s+incomum']
+        self.tentativas_exploracao = ['DROP\s+TABLE', 'UNION\s+SELECT', 'tentativa\s+de\s+exploração']
         self.create_widgets()
 
     def create_widgets(self):
@@ -24,7 +25,7 @@ class WebAnalyzerApp:
         self.label_url.grid(column=0, row=0, padx=10, pady=5, sticky=tk.W)
 
         self.entry_url = ttk.Entry(self.root, width=50)
-        self.entry_url.insert(0, 'https://callphone-saneago.bashtechnology.com.br/')
+        self.entry_url.insert(0, 'https://exemplo.com/')
         self.entry_url.grid(column=1, row=0, padx=10, pady=5, sticky=tk.W)
 
         # Botão para iniciar a análise
@@ -244,6 +245,23 @@ class WebAnalyzerApp:
         # Monitoramento de Atividade Suspeita
         logs = self.capturar_logs()
         self.monitoramento_atividade_suspeita(logs)
+    def monitoramento_atividade_suspeita(self, logs):
+        try:
+            # Análise de padrões incomuns nos logs
+            compiled_padroes_incomuns = [re.compile(padrao, re.IGNORECASE) for padrao in self.padroes_incomuns]
+            for log in logs:
+                for compiled_padrao in compiled_padroes_incomuns:
+                    if compiled_padrao.search(log):
+                        self.exibir_resultado(f"Atividade suspeita detectada nos logs: {log}")
+
+            # Análise de tentativas de exploração
+            compiled_tentativas_exploracao = [re.compile(tentativa, re.IGNORECASE) for tentativa in self.tentativas_exploracao]
+            for log in logs:
+                for compiled_tentativa in compiled_tentativas_exploracao:
+                    if compiled_tentativa.search(str(log)):
+                        self.exibir_resultado(f"Tentativa de exploração detectada nos logs: {log}")
+        except Exception as e:
+            self.exibir_resultado(f"Erro no monitoramento de atividade suspeita: {e}")
 
     def avaliacao_criptografia(self, texto):
         try:
@@ -258,45 +276,30 @@ class WebAnalyzerApp:
         logs = ["Log de acesso bem-sucedido", "Tentativa de acesso não autorizado", "Outro evento de log", "..."]
         return logs
 
-    def monitoramento_atividade_suspeita(self, logs):
-        try:
-            # Análise de padrões incomuns nos logs
-            padroes_incomuns = ['SQL.*error', 'acesso\s+não\s+autorizado', 'padrão\s+incomum', ...]
-            for log in logs:
-                for padrao in padroes_incomuns:
-                    if re.search(padrao, log, re.IGNORECASE):
-                        self.exibir_resultado(f"Atividade suspeita detectada nos logs: {log}")
-
-            # Análise de tentativas de exploração
-            tentativas_exploracao = ['DROP\s+TABLE', 'UNION\s+SELECT', 'tentativa\s+de\s+exploração', ...]
-            for tentativa in tentativas_exploracao:
-                if re.search(tentativa, str(logs), re.IGNORECASE):
-                    self.exibir_resultado(f"Tentativa de exploração detectada nos logs: {tentativa}")
-        except Exception as e:
-            self.exibir_resultado(f"Erro no monitoramento de atividade suspeita: {e}")
-
-def is_admin():
-    # Verificar se o script está sendo executado como administrador no Windows
-    if os.name == 'nt':
-        try:
-            return ctypes.windll.shell32.IsUserAnAdmin()
-        except:
+    def is_admin(self):
+        # Verificar se o script está sendo executado como administrador no Windows
+        if os.name == 'nt':
+            try:
+                return ctypes.windll.shell32.IsUserAnAdmin()
+            except:
+                return False
+        # Verificar se o script está sendo executado como root no Linux
+        elif os.name == 'posix':
+            return os.geteuid() == 0
+        else:
             return False
-    # Verificar se o script está sendo executado como root no Linux
-    elif os.name == 'posix':
-        return os.geteuid() == 0
-    else:
-        return False
 
-def main():
-    if is_admin():
-        # Se já estiver sendo executado como administrador, execute o código principal aqui
-        root = tk.Tk()
-        app = WebAnalyzerApp(root)
-        root.mainloop()
-    else:
-        messagebox.showerror("Erro", "Esta aplicação requer privilégios de administrador.")
-        sys.exit()
+    def main(self):
+        if self.is_admin():
+            # Se já estiver sendo executado como administrador, execute o código principal aqui
+            root = tk.Tk()
+            app = WebAnalyzerApp(root)
+            root.mainloop()
+        else:
+            messagebox.showerror("Erro", "Esta aplicação requer privilégios de administrador.")
+            sys.exit()
 
 if __name__ == "__main__":
-    main()
+    root = tk.Tk()
+    app_instance = WebAnalyzerApp(root)
+    root.mainloop()
