@@ -1,0 +1,22 @@
+Instalar Dependências:
+
+Abra o terminal.
+Navegue até o diretório do projeto.
+Execute o seguinte comando para instalar as dependências:
+bash
+Copy code
+pip install -r requirements.txt
+Criar Executável:
+
+Execute o seguinte comando para criar o executável usando o PyInstaller:
+bash
+Copy code
+pyinstaller --onefile analiz.py
+Encontrar o Executável:
+
+Navegue até o diretório dist no projeto.
+Você encontrará o executável analiz.exe.
+Executar o Executável:
+
+Dê um clique duplo no arquivo analiz.exe.
+A aplicação será iniciada.
